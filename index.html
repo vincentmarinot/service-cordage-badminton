@@ -4,122 +4,121 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Service Cordage Badminton</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="app-container">
-    <header class="app-header">
-      <div class="header-top">
+  <div class="bg-shuttle bg-shuttle-1"></div>
+  <div class="bg-shuttle bg-shuttle-2"></div>
+
+  <header class="hero">
+    <div class="hero-badge">🏸 Stand de cordage</div>
+    <h1>Service Cordage Badminton</h1>
+    <p class="hero-subtitle">
+      Déposez votre raquette, consultez la file d’attente en direct
+      et retrouvez votre ordre de passage instantanément.
+    </p>
+  </header>
+
+  <main class="container">
+    <section class="card form-card">
+      <div class="section-title">
+        <span class="section-icon">📝</span>
         <div>
-          <p class="mini-label">Vincent Marinot</p>
-          <h1>Service Cordage</h1>
-          <p class="header-subtitle">Badminton • Dépôt rapide • Suivi en direct</p>
-        </div>
-        <button id="cordeur-btn" class="ghost-btn">Espace cordeur</button>
-      </div>
-
-      <div class="hero-grid">
-        <div class="hero-card">
-          <p class="hero-title">Déposez votre raquette</p>
-          <p class="hero-text">
-            Remplissez le formulaire pour entrer dans la file d’attente.
-          </p>
-          <div class="hero-pill">⏱ Temps moyen : 30 min / raquette</div>
-        </div>
-
-        <div class="hero-card qr-card">
-          <p class="hero-title">QR code dépôt direct</p>
-          <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://vincentmarinot.github.io/service-cordage-badminton/"
-            alt="QR code dépôt direct"
-          />
-          <p class="qr-note">Scannez pour ouvrir directement le dépôt</p>
+          <h2>Déposer une raquette</h2>
+          <p>Remplissez les informations ci-dessous.</p>
         </div>
       </div>
-    </header>
 
-    <main class="app-main">
-      <section class="card">
-        <div class="section-title-row">
-          <h2>Nouvelle raquette</h2>
-          <span class="badge">Formulaire joueur</span>
+      <form id="add-form" class="form-grid">
+        <div class="field full">
+          <label for="player-name">Nom du joueur</label>
+          <input id="player-name" type="text" placeholder="Ex : Martin" required />
         </div>
 
-        <form id="add-form" class="string-form">
-          <div class="input-group">
-            <label for="player-name">Nom du joueur</label>
-            <input type="text" id="player-name" placeholder="Ex : Martin" required />
-          </div>
+        <div class="field">
+          <label for="racket-name">Raquette</label>
+          <input id="racket-name" type="text" placeholder="Ex : Arcsaber 11 Pro" required />
+        </div>
 
-          <div class="input-group">
-            <label for="phone">Téléphone</label>
-            <input type="tel" id="phone" placeholder="Ex : 0612345678" required />
-          </div>
+        <div class="field">
+          <label for="string-type">Cordage</label>
+          <select id="string-type" required>
+            <option value="BG65">BG65</option>
+            <option value="BG80">BG80</option>
+            <option value="BG80 Power">BG80 Power</option>
+            <option value="Aerobite">Aerobite</option>
+            <option value="Exbolt 63">Exbolt 63</option>
+            <option value="Exbolt 65">Exbolt 65</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
 
-          <div class="input-group">
-            <label for="racket-name">Modèle de raquette</label>
-            <input type="text" id="racket-name" placeholder="Ex : Arcsaber 11 Pro" required />
-          </div>
+        <div class="field">
+          <label for="tension">Tension (kg)</label>
+          <input id="tension" type="number" step="0.5" min="7" max="16" placeholder="Ex : 11" required />
+        </div>
 
-          <div class="double-grid">
-            <div class="input-group">
-              <label for="string-type">Cordage</label>
-              <select id="string-type">
-                <option>BG65</option>
-                <option>BG65 Ti</option>
-                <option>BG80</option>
-                <option>BG80 Power</option>
-                <option>Aerobite</option>
-                <option>Exbolt 63</option>
-                <option>Exbolt 65</option>
-                <option>VBS 66</option>
-                <option>VBS 58</option>
-              </select>
-            </div>
+        <div class="field checkbox-field full">
+          <label class="checkbox-label">
+            <input id="priority" type="checkbox" />
+            <span>Priorité match</span>
+          </label>
+        </div>
 
-            <div class="input-group">
-              <label for="tension">Tension</label>
-              <input type="number" step="0.5" id="tension" placeholder="Ex : 11" required />
-            </div>
-          </div>
-
-          <div class="checkbox-row">
-            <input type="checkbox" id="priority" />
-            <label for="priority">Priorité match / urgence</label>
-          </div>
-
+        <div class="full">
           <button type="submit" class="primary-btn">Ajouter à la file</button>
-        </form>
-      </section>
+        </div>
+      </form>
+    </section>
 
-      <section class="card">
-        <div class="section-title-row">
-          <h2>File d’attente</h2>
-          <span id="queue-count" class="badge badge-dark">0 raquette</span>
+    <section class="card queue-card">
+      <div class="queue-header">
+        <div class="section-title">
+          <span class="section-icon">📋</span>
+          <div>
+            <h2>File d’attente</h2>
+            <p>Ordre de passage en direct.</p>
+          </div>
         </div>
 
-        <div id="queue-empty" class="empty-box">
-          Aucune raquette en attente pour le moment.
+        <div class="queue-counter" id="queue-count">0 raquette</div>
+      </div>
+
+      <div id="queue-empty" class="empty-state">
+        Aucune raquette en attente pour le moment.
+      </div>
+
+      <ul id="queue-list" class="queue-list"></ul>
+    </section>
+
+    <section class="cordeur-zone">
+      <button id="cordeur-btn" class="secondary-btn">Espace cordeur</button>
+
+      <section id="cordeur-panel" class="card cordeur-card hidden">
+        <div class="section-title">
+          <span class="section-icon">🔐</span>
+          <div>
+            <h2>Panneau cordeur</h2>
+            <p>Réservé au cordeur pour valider les raquettes terminées.</p>
+          </div>
         </div>
 
-        <ul id="queue-list" class="queue-list"></ul>
-      </section>
-
-      <section id="cordeur-panel" class="card hidden">
-        <div class="section-title-row">
-          <h2>Tableau cordeur</h2>
-          <span class="badge badge-red">Accès réservé</span>
-        </div>
-
-        <div id="cordeur-empty" class="empty-box">
+        <div id="cordeur-empty" class="empty-state">
           Aucune raquette à traiter.
         </div>
 
         <ul id="cordeur-list" class="queue-list"></ul>
       </section>
-    </main>
-  </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>🏸 File d’attente de cordage en direct</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
