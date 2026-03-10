@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://jbclmwoyrrvmtqagnati.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
-const SMS_WEBHOOK_URL = "hello-messaging-7093-47fdmw.twil.io";
+const SMS_WEBHOOK_URL = "https://hello-messaging-7093-47fdmw.twil.io";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
