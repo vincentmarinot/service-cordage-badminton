@@ -69,3 +69,18 @@ loadQueue();
 });
 
 loadQueue();
+async function finishRacket(id,phone){
+
+await supabase
+.from('cordages')
+.update({status:'done'})
+.eq('id',id);
+
+fetch("URL_TWILIO",{
+method:"POST",
+body:JSON.stringify({phone})
+});
+
+loadQueue();
+
+}
