@@ -1,7 +1,7 @@
 :root{
   --bg-1: #eaf2fb;
   --bg-2: #dfeaf7;
-  --card: rgba(255,255,255,0.92);
+  --card: rgba(255,255,255,0.94);
   --navy: #0d2340;
   --blue: #1d5fb8;
   --blue-2: #2f7ae5;
@@ -11,8 +11,6 @@
   --danger: #df4f4f;
   --shadow: 0 12px 30px rgba(10,35,64,0.12);
   --radius-xl: 24px;
-  --radius-lg: 18px;
-  --radius-md: 14px;
 }
 
 *{
@@ -80,7 +78,6 @@ body{
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 20px;
   padding: 18px;
-  backdrop-filter: blur(6px);
 }
 
 .hero-title{
@@ -99,7 +96,6 @@ body{
   margin-top: 14px;
   display: inline-block;
   background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.16);
   color: white;
   padding: 10px 14px;
   border-radius: 999px;
@@ -134,7 +130,6 @@ body{
 
 .card{
   background: var(--card);
-  backdrop-filter: blur(10px);
   border-radius: var(--radius-xl);
   padding: 18px;
   box-shadow: var(--shadow);
@@ -209,23 +204,13 @@ select{
   padding: 14px 14px;
   font-size: 16px;
   color: var(--text);
-  transition: 0.2s ease;
-}
-
-input:focus,
-select:focus{
-  outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 4px rgba(29,95,184,0.10);
 }
 
 .checkbox-row{
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-start;
   text-align: left;
-  color: var(--text);
   font-size: 14px;
 }
 
@@ -240,7 +225,6 @@ select:focus{
 .finish-btn{
   border: none;
   cursor: pointer;
-  transition: 0.2s ease;
 }
 
 .primary-btn{
@@ -252,11 +236,6 @@ select:focus{
   border-radius: 16px;
 }
 
-.primary-btn:hover{
-  transform: translateY(-1px);
-  opacity: 0.97;
-}
-
 .ghost-btn{
   background: rgba(255,255,255,0.12);
   color: white;
@@ -264,10 +243,6 @@ select:focus{
   padding: 12px 14px;
   font-size: 14px;
   white-space: nowrap;
-}
-
-.ghost-btn:hover{
-  background: rgba(255,255,255,0.20);
 }
 
 .empty-box{
@@ -291,7 +266,6 @@ select:focus{
   border-radius: 20px;
   padding: 16px;
   margin-top: 12px;
-  box-shadow: 0 6px 14px rgba(17,40,69,0.05);
 }
 
 .queue-item.priority{
@@ -320,7 +294,6 @@ select:focus{
   padding: 7px 11px;
   font-size: 12px;
   font-weight: bold;
-  white-space: nowrap;
 }
 
 .queue-details{
@@ -355,10 +328,6 @@ select:focus{
   padding: 11px 14px;
   font-size: 14px;
   font-weight: bold;
-}
-
-.finish-btn:hover{
-  opacity: 0.94;
 }
 
 .hidden{
