@@ -1,81 +1,85 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Service Cordage Badminton</title>
-
-<link rel="stylesheet" href="styles.css">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Cordage Badminton</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Vincent Marinot</p>
+        <h1>Service Cordage Badminton</h1>
+        <p class="subtitle">Déposez votre raquette rapidement et suivez la file d’attente.</p>
+      </div>
+      <button id="cordeur-btn" class="secondary-btn">Espace cordeur</button>
+    </header>
 
-<header>
+    <main class="mobile-layout">
+      <section class="card hero-card">
+        <div class="hero-left">
+          <h2>Dépôt direct</h2>
+          <p>Remplissez le formulaire ci-dessous pour enregistrer votre raquette.</p>
+          <div class="info-pill">Temps moyen : <strong>30 min / raquette</strong></div>
+        </div>
 
-<h1>🏸 Service Cordage Badminton</h1>
+        <div class="qr-box">
+          <p class="qr-title">QR code dépôt direct</p>
+          <img
+            id="qr-image"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://vincentmarinot.github.io/service-cordage-badminton/"
+            alt="QR code dépôt direct"
+          />
+          <p class="qr-caption">Scannez pour ouvrir ce formulaire</p>
+        </div>
+      </section>
 
-<button id="cordeur-btn">Espace cordeur</button>
+      <section class="card">
+        <h2>Déposer une raquette</h2>
+        <form id="add-form" class="string-form">
+          <input type="text" id="player-name" placeholder="Nom du joueur" required />
+          <input type="text" id="racket-name" placeholder="Modèle de raquette" required />
 
-</header>
+          <select id="string-type">
+            <option>BG65</option>
+            <option>BG65 Ti</option>
+            <option>BG80</option>
+            <option>BG80 Power</option>
+            <option>Aerobite</option>
+            <option>Exbolt 63</option>
+            <option>Exbolt 65</option>
+            <option>VBS 66</option>
+            <option>VBS 58</option>
+          </select>
 
+          <input type="number" step="0.5" id="tension" placeholder="Tension (ex : 11)" required />
 
-<main>
+          <button type="submit" class="primary-btn">Ajouter à la file</button>
+        </form>
+      </section>
 
-<section class="form-section">
+      <section class="card">
+        <div class="section-header">
+          <h2>File d’attente</h2>
+          <span id="queue-count" class="badge">0 raquette</span>
+        </div>
+        <div id="queue-empty" class="empty-state">Aucune raquette en attente pour le moment.</div>
+        <ul id="queue-list" class="queue-list"></ul>
+      </section>
 
-<h2>Déposer une raquette</h2>
+      <section id="cordeur-panel" class="card cordeur-panel hidden">
+        <div class="section-header">
+          <h2>Tableau cordeur</h2>
+          <span class="badge badge-dark">Accès cordeur</span>
+        </div>
+        <div id="cordeur-empty" class="empty-state">Aucune raquette à traiter.</div>
+        <ul id="cordeur-list" class="queue-list"></ul>
+      </section>
+    </main>
+  </div>
 
-<form id="add-form">
-
-<input type="text" id="player-name" placeholder="Nom du joueur" required>
-
-<input type="text" id="racket-name" placeholder="Modèle raquette" required>
-
-<select id="string-type">
-
-<option>BG65</option>
-<option>BG65 Ti</option>
-<option>BG80</option>
-<option>BG80 Power</option>
-<option>Aerobite</option>
-<option>Exbolt 63</option>
-<option>Exbolt 65</option>
-<option>VBS 66</option>
-<option>VBS 58</option>
-
-</select>
-
-<input type="number" id="tension" placeholder="Tension (ex : 11)" required>
-
-<button type="submit">Ajouter à la file</button>
-
-</form>
-
-</section>
-
-
-<section class="queue-section">
-
-<h2>File d'attente</h2>
-
-<ul id="queue-list"></ul>
-
-</section>
-
-<section id="cordeur-panel" style="display:none">
-
-<h2>Tableau cordeur</h2>
-
-<ul id="cordeur-list"></ul>
-
-</section>
-
-</main>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
