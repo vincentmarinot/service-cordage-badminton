@@ -1,131 +1,131 @@
-const form = document.getElementById("add-form")
-const queueList = document.getElementById("queue-list")
-const cordeurList = document.getElementById("cordeur-list")
-const cordeurBtn = document.getElementById("cordeur-btn")
-const cordeurPanel = document.getElementById("cordeur-panel")
+const form = document.getElementById("add-form");
+const queueList = document.getElementById("queue-list");
+const cordeurList = document.getElementById("cordeur-list");
+const cordeurBtn = document.getElementById("cordeur-btn");
+const cordeurPanel = document.getElementById("cordeur-panel");
+const queueCount = document.getElementById("queue-count");
+const queueEmpty = document.getElementById("queue-empty");
+const cordeurEmpty = document.getElementById("cordeur-empty");
 
-let queue = JSON.parse(localStorage.getItem("queue")) || []
+let queue = JSON.parse(localStorage.getItem("queueCordageBadminton")) || [];
 
-function saveQueue(){
-
-localStorage.setItem("queue",JSON.stringify(queue))
-
+function saveQueue() {
+  localStorage.setItem("queueCordageBadminton", JSON.stringify(queue));
 }
 
-function renderQueue(){
-
-queueList.innerHTML=""
-
-queue.forEach((item,index)=>{
-
-let attente=(index+1)*30
-
-let li=document.createElement("li")
-
-li.innerHTML=
-"#"+(index+1)+" - "+
-item.player+
-" | "+
-item.racket+
-" | "+
-item.string+
-" | "+
-item.tension+
-"kg"+
-" | ⏱ "+attente+" min"
-
-queueList.appendChild(li)
-
-})
-
+function formatWait(index) {
+  const minutes = (index + 1) * 30;
+  if (minutes < 60) return `${minutes} min estimées`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (mins === 0) return `${hours}h estimée`;
+  return `${hours}h${mins} estimées`;
 }
 
-function renderCordeur(){
+function renderPublicQueue() {
+  queueList.innerHTML = "";
+  queueCount.textContent = `${queue.length} ${queue.length > 1 ? "raquettes" : "raquette"}`;
 
-cordeurList.innerHTML=""
+  if (queue.length === 0) {
+    queueEmpty.style.display = "block";
+    return;
+  }
 
-queue.forEach((item,index)=>{
+  queueEmpty.style.display = "none";
 
-let li=document.createElement("li")
+  queue.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.className = "queue-item";
 
-let btn=document.createElement("button")
+    li.innerHTML = `
+      <div class="queue-top">
+        <div class="queue-name">${item.player}</div>
+        <div class="queue-pos">#${index + 1}</div>
+      </div>
+      <div class="queue-meta">
+        ${item.racket}<br>
+        ${item.string} · ${item.tension} kg
+      </div>
+      <div class="wait-line">⏱ ${formatWait(index)}</div>
+    `;
 
-btn.innerText="Raquette terminée"
-
-btn.className="finish-btn"
-
-btn.onclick=function(){
-
-queue.splice(index,1)
-
-saveQueue()
-
-renderQueue()
-
-renderCordeur()
-
+    queueList.appendChild(li);
+  });
 }
 
-li.innerHTML=
-"#"+(index+1)+" - "+
-item.player+
-" | "+
-item.racket+
-" | "+
-item.string+
-" | "+
-item.tension+"kg "
+function renderCordeurQueue() {
+  cordeurList.innerHTML = "";
 
-li.appendChild(btn)
+  if (queue.length === 0) {
+    cordeurEmpty.style.display = "block";
+    return;
+  }
 
-cordeurList.appendChild(li)
+  cordeurEmpty.style.display = "none";
 
-})
+  queue.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.className = "queue-item";
 
+    li.innerHTML = `
+      <div class="queue-top">
+        <div class="queue-name">${item.player}</div>
+        <div class="queue-pos">#${index + 1}</div>
+      </div>
+      <div class="queue-meta">
+        ${item.racket}<br>
+        ${item.string} · ${item.tension} kg
+      </div>
+      <div class="wait-line">⏱ ${formatWait(index)}</div>
+    `;
+
+    const btn = document.createElement("button");
+    btn.className = "finish-btn";
+    btn.textContent = "Raquette terminée";
+    btn.onclick = function () {
+      queue.splice(index, 1);
+      saveQueue();
+      renderPublicQueue();
+      renderCordeurQueue();
+    };
+
+    li.appendChild(btn);
+    cordeurList.appendChild(li);
+  });
 }
 
-form.addEventListener("submit",function(e){
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-e.preventDefault()
+  const player = document.getElementById("player-name").value.trim();
+  const racket = document.getElementById("racket-name").value.trim();
+  const string = document.getElementById("string-type").value;
+  const tension = document.getElementById("tension").value.trim();
 
-let player=document.getElementById("player-name").value
-let racket=document.getElementById("racket-name").value
-let string=document.getElementById("string-type").value
-let tension=document.getElementById("tension").value
+  if (!player || !racket || !tension) {
+    alert("Merci de remplir tous les champs.");
+    return;
+  }
 
-queue.push({
+  queue.push({
+    player,
+    racket,
+    string,
+    tension
+  });
 
-player,
-racket,
-string,
-tension
+  saveQueue();
+  renderPublicQueue();
+  renderCordeurQueue();
 
-})
+  const wait = formatWait(queue.length - 1);
+  form.reset();
+  alert(`Raquette enregistrée ✅\nTemps estimé : ${wait}`);
+});
 
-saveQueue()
+cordeurBtn.addEventListener("click", function () {
+  cordeurPanel.classList.toggle("hidden");
+});
 
-renderQueue()
-
-renderCordeur()
-
-form.reset()
-
-})
-
-cordeurBtn.onclick=function(){
-
-if(cordeurPanel.style.display==="none"){
-
-cordeurPanel.style.display="block"
-
-}else{
-
-cordeurPanel.style.display="none"
-
-}
-
-}
-
-renderQueue()
-
-renderCordeur()
+renderPublicQueue();
+renderCordeurQueue();
