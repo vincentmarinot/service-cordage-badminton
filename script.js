@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://jbclmwoyrrvmtqagnati.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
-const CORDEUR_PASSWORD = "Badlab1996!";
+const CORDEUR_PASSWORD = "badminton123";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -22,10 +22,14 @@ function getEstimatedTime(index) {
 
 function formatWait(index) {
   const minutes = getEstimatedTime(index);
+
   if (minutes < 60) return `${minutes} min estimées`;
+
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
+
   if (mins === 0) return `${hours}h estimée`;
+
   return `${hours}h${mins} estimées`;
 }
 
@@ -33,8 +37,10 @@ function formatReadyTime(index) {
   const minutesToAdd = getEstimatedTime(index);
   const now = new Date();
   const ready = new Date(now.getTime() + minutesToAdd * 60000);
+
   const hours = ready.getHours().toString().padStart(2, "0");
   const minutes = ready.getMinutes().toString().padStart(2, "0");
+
   return `${hours}:${minutes}`;
 }
 
@@ -42,7 +48,9 @@ function buildQueueItem(item, index, isCordeur = false) {
   const li = document.createElement("li");
   li.className = "queue-item";
 
-  if (item.priority) li.classList.add("priority");
+  if (item.priority) {
+    li.classList.add("priority");
+  }
 
   li.innerHTML = `
     <div class="queue-row-top">
@@ -137,7 +145,7 @@ async function finishRacket(id) {
     .eq("id", id);
 
   if (error) {
-    alert("Erreur lors de la mise à jour de la raquette.");
+    alert("Erreur lors de la validation de la raquette.");
     console.error(error);
     return;
   }
