@@ -14,9 +14,13 @@
 <body>
 
 <header>
+
 <h1>🏸 Service Cordage Badminton</h1>
-<p>Déposez votre raquette dans la file d'attente</p>
+
+<button id="cordeur-btn">Espace cordeur</button>
+
 </header>
+
 
 <main>
 
@@ -28,16 +32,19 @@
 
 <input type="text" id="player-name" placeholder="Nom du joueur" required>
 
-<input type="text" id="racket-name" placeholder="Modèle de raquette" required>
+<input type="text" id="racket-name" placeholder="Modèle raquette" required>
 
 <select id="string-type">
 
 <option>BG65</option>
+<option>BG65 Ti</option>
 <option>BG80</option>
 <option>BG80 Power</option>
 <option>Aerobite</option>
 <option>Exbolt 63</option>
 <option>Exbolt 65</option>
+<option>VBS 66</option>
+<option>VBS 58</option>
 
 </select>
 
@@ -58,13 +65,15 @@
 
 </section>
 
+<section id="cordeur-panel" style="display:none">
+
+<h2>Tableau cordeur</h2>
+
+<ul id="cordeur-list"></ul>
+
+</section>
+
 </main>
-
-<footer>
-
-<p>Temps estimé : 30 minutes par raquette</p>
-
-</footer>
 
 <script src="script.js"></script>
 
