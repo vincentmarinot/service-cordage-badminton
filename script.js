@@ -122,7 +122,6 @@ async function loadQueue() {
 }
 
 async function finishRacket(id, phone, player) {
-
   const { error } = await sb
     .from("cordages")
     .update({ status: "done" })
@@ -133,6 +132,34 @@ async function finishRacket(id, phone, player) {
     console.error(error);
     return;
   }
+
+  try {
+    const formattedPhone = phone.replace(/^0/, "+33");
+
+    console.log("APPEL TWILIO VERS :", SMS_WEBHOOK_URL);
+    console.log("NUMERO ENVOYE :", formattedPhone);
+    console.log("JOUEUR ENVOYE :", player);
+
+    const response = await fetch(SMS_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        phone: formattedPhone,
+        player: player
+      })
+    });
+
+    const text = await response.text();
+    console.log("REPONSE TWILIO :", response.status, text);
+
+  } catch (err) {
+    console.error("ERREUR FETCH TWILIO :", err);
+  }
+
+  await loadQueue();
+}
 
   try {
 
