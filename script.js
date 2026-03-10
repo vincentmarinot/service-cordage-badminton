@@ -142,15 +142,7 @@ form.addEventListener("submit", function (e) {
   saveQueue();
   renderAll();
 
-  const newIndex = queue.findIndex(
-    item =>
-      item.player === player &&
-      item.racket === racket &&
-      item.string === string &&
-      item.tension === tension
-  );
-
-  const waitMessage = newIndex >= 0 ? formatWait(newIndex) : "en cours de calcul";
+  const waitMessage = queue.length ? formatWait(queue.length - 1) : "en cours de calcul";
   form.reset();
   alert(`Raquette enregistrée ✅\nTemps estimé : ${waitMessage}`);
 });
