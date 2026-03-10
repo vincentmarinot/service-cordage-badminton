@@ -1,31 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badminton Racket Stringing Queue Management</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Service Cordage Badminton</title>
+
+<link rel="stylesheet" href="styles.css">
+
 </head>
+
 <body>
-    <header>
-        <h1>Badminton Racket Stringing Queue Management</h1>
-    </header>
-    <main>
-        <section id="queue">
-            <h2>Current Queue</h2>
-            <ul id="queue-list">
-                <!-- Queue items will go here -->
-            </ul>
-        </section>
-        <section id="add-stringing">
-            <h2>Add Racket to Queue</h2>
-            <form id="add-form">
-                <input type="text" id="racket-name" placeholder="Enter Racket Name" required>
-                <input type="text" id="player-name" placeholder="Enter Player Name" required>
-                <button type="submit">Add to Queue</button>
-            </form>
-        </section>
-    </main>
-    <script src="script.js"></script>
+
+<header>
+<h1>🏸 Service Cordage Badminton</h1>
+<p>Déposez votre raquette dans la file d'attente</p>
+</header>
+
+<main>
+
+<section class="form-section">
+
+<h2>Déposer une raquette</h2>
+
+<form id="add-form">
+
+<input type="text" id="player-name" placeholder="Nom du joueur" required>
+
+<input type="text" id="racket-name" placeholder="Modèle de raquette" required>
+
+<select id="string-type">
+
+<option>BG65</option>
+<option>BG80</option>
+<option>BG80 Power</option>
+<option>Aerobite</option>
+<option>Exbolt 63</option>
+<option>Exbolt 65</option>
+
+</select>
+
+<input type="number" id="tension" placeholder="Tension (ex : 11)" required>
+
+<button type="submit">Ajouter à la file</button>
+
+</form>
+
+</section>
+
+
+<section class="queue-section">
+
+<h2>File d'attente</h2>
+
+<ul id="queue-list"></ul>
+
+</section>
+
+</main>
+
+<footer>
+
+<p>Temps estimé : 30 minutes par raquette</p>
+
+</footer>
+
+<script src="script.js"></script>
+
 </body>
 </html>
