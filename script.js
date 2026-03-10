@@ -40,6 +40,7 @@ function formatReadyTime(index) {
 function buildQueueItem(item, index, isCordeur = false) {
   const li = document.createElement("li");
   li.className = "queue-item";
+
   if (item.priority) li.classList.add("priority");
 
   li.innerHTML = `
@@ -47,13 +48,16 @@ function buildQueueItem(item, index, isCordeur = false) {
       <div class="queue-player">${item.player}</div>
       <div class="queue-position">#${index + 1}</div>
     </div>
+
     <div class="queue-details">
       ${item.racket}<br>
       ${item.string_type} · ${item.tension} kg
     </div>
+
     <div class="queue-wait">
       ⏱ ${formatWait(index)} • Retrait estimé vers ${formatReadyTime(index)}
     </div>
+
     ${item.priority ? `<div class="queue-priority-tag">Priorité match</div>` : ""}
   `;
 
@@ -61,9 +65,11 @@ function buildQueueItem(item, index, isCordeur = false) {
     const btn = document.createElement("button");
     btn.className = "finish-btn";
     btn.textContent = "Raquette terminée";
+
     btn.onclick = async function () {
       await finishRacket(item.id, item.phone, item.player);
     };
+
     li.appendChild(btn);
   }
 
@@ -72,7 +78,9 @@ function buildQueueItem(item, index, isCordeur = false) {
 
 function renderPublicQueue() {
   queueList.innerHTML = "";
-  queueCount.textContent = `${queue.length} ${queue.length > 1 ? "raquettes" : "raquette"}`;
+
+  queueCount.textContent =
+    `${queue.length} ${queue.length > 1 ? "raquettes" : "raquette"}`;
 
   if (queue.length === 0) {
     queueEmpty.style.display = "block";
@@ -80,6 +88,7 @@ function renderPublicQueue() {
   }
 
   queueEmpty.style.display = "none";
+
   queue.forEach((item, index) => {
     queueList.appendChild(buildQueueItem(item, index, false));
   });
@@ -94,6 +103,7 @@ function renderCordeurQueue() {
   }
 
   cordeurEmpty.style.display = "none";
+
   queue.forEach((item, index) => {
     cordeurList.appendChild(buildQueueItem(item, index, true));
   });
@@ -122,6 +132,7 @@ async function loadQueue() {
 }
 
 async function finishRacket(id, phone, player) {
+
   const { error } = await sb
     .from("cordages")
     .update({ status: "done" })
@@ -134,6 +145,7 @@ async function finishRacket(id, phone, player) {
   }
 
   try {
+
     const formattedPhone = phone.replace(/^0/, "+33");
 
     await fetch(SMS_WEBHOOK_URL, {
@@ -146,6 +158,7 @@ async function finishRacket(id, phone, player) {
         player: player
       })
     });
+
   } catch (err) {
     console.error("Erreur envoi SMS :", err);
   }
@@ -154,6 +167,7 @@ async function finishRacket(id, phone, player) {
 }
 
 form.addEventListener("submit", async function (e) {
+
   e.preventDefault();
 
   const player = document.getElementById("player-name").value.trim();
@@ -187,7 +201,9 @@ form.addEventListener("submit", async function (e) {
   }
 
   form.reset();
+
   await loadQueue();
+
   alert("Raquette enregistrée ✅");
 });
 
