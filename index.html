@@ -7,74 +7,110 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Vincent Marinot</p>
-        <h1>Service Cordage Badminton</h1>
-        <p class="subtitle">Déposez votre raquette rapidement et suivez la file d’attente.</p>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-top">
+        <div>
+          <p class="mini-label">Vincent Marinot</p>
+          <h1>Service Cordage</h1>
+          <p class="header-subtitle">Badminton • Dépôt rapide • Suivi en direct</p>
+        </div>
+        <button id="cordeur-btn" class="ghost-btn">Espace cordeur</button>
       </div>
-      <button id="cordeur-btn" class="secondary-btn">Espace cordeur</button>
-    </header>
 
-    <main class="mobile-layout">
-      <section class="card hero-card">
-        <div class="hero-left">
-          <h2>Dépôt direct</h2>
-          <p>Remplissez le formulaire ci-dessous pour enregistrer votre raquette.</p>
-          <div class="info-pill">Temps moyen : <strong>30 min / raquette</strong></div>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <p class="hero-title">Déposez votre raquette</p>
+          <p class="hero-text">
+            Remplissez le formulaire ci-dessous pour entrer dans la file d’attente.
+          </p>
+          <div class="hero-pill">⏱ Temps moyen : 30 min / raquette</div>
         </div>
 
-        <div class="qr-box">
-          <p class="qr-title">QR code dépôt direct</p>
+        <div class="hero-card qr-card">
+          <p class="hero-title">QR code dépôt direct</p>
           <img
             id="qr-image"
-            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://vincentmarinot.github.io/service-cordage-badminton/"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://vincentmarinot.github.io/service-cordage-badminton/"
             alt="QR code dépôt direct"
           />
-          <p class="qr-caption">Scannez pour ouvrir ce formulaire</p>
+          <p class="qr-note">Scannez pour ouvrir directement le dépôt</p>
         </div>
-      </section>
+      </div>
+    </header>
 
+    <main class="app-main">
       <section class="card">
-        <h2>Déposer une raquette</h2>
+        <div class="section-title-row">
+          <h2>Nouvelle raquette</h2>
+          <span class="badge">Formulaire joueur</span>
+        </div>
+
         <form id="add-form" class="string-form">
-          <input type="text" id="player-name" placeholder="Nom du joueur" required />
-          <input type="text" id="racket-name" placeholder="Modèle de raquette" required />
+          <div class="input-group">
+            <label for="player-name">Nom du joueur</label>
+            <input type="text" id="player-name" placeholder="Ex : Martin" required />
+          </div>
 
-          <select id="string-type">
-            <option>BG65</option>
-            <option>BG65 Ti</option>
-            <option>BG80</option>
-            <option>BG80 Power</option>
-            <option>Aerobite</option>
-            <option>Exbolt 63</option>
-            <option>Exbolt 65</option>
-            <option>VBS 66</option>
-            <option>VBS 58</option>
-          </select>
+          <div class="input-group">
+            <label for="racket-name">Modèle de raquette</label>
+            <input type="text" id="racket-name" placeholder="Ex : Arcsaber 11 Pro" required />
+          </div>
 
-          <input type="number" step="0.5" id="tension" placeholder="Tension (ex : 11)" required />
+          <div class="double-grid">
+            <div class="input-group">
+              <label for="string-type">Cordage</label>
+              <select id="string-type">
+                <option>BG65</option>
+                <option>BG65 Ti</option>
+                <option>BG80</option>
+                <option>BG80 Power</option>
+                <option>Aerobite</option>
+                <option>Exbolt 63</option>
+                <option>Exbolt 65</option>
+                <option>VBS 66</option>
+                <option>VBS 58</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="tension">Tension</label>
+              <input type="number" step="0.5" id="tension" placeholder="Ex : 11" required />
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="priority" />
+            <label for="priority">Priorité match / urgence</label>
+          </div>
 
           <button type="submit" class="primary-btn">Ajouter à la file</button>
         </form>
       </section>
 
       <section class="card">
-        <div class="section-header">
+        <div class="section-title-row">
           <h2>File d’attente</h2>
-          <span id="queue-count" class="badge">0 raquette</span>
+          <span id="queue-count" class="badge badge-dark">0 raquette</span>
         </div>
-        <div id="queue-empty" class="empty-state">Aucune raquette en attente pour le moment.</div>
+
+        <div id="queue-empty" class="empty-box">
+          Aucune raquette en attente pour le moment.
+        </div>
+
         <ul id="queue-list" class="queue-list"></ul>
       </section>
 
-      <section id="cordeur-panel" class="card cordeur-panel hidden">
-        <div class="section-header">
+      <section id="cordeur-panel" class="card hidden">
+        <div class="section-title-row">
           <h2>Tableau cordeur</h2>
-          <span class="badge badge-dark">Accès cordeur</span>
+          <span class="badge badge-red">Accès réservé</span>
         </div>
-        <div id="cordeur-empty" class="empty-state">Aucune raquette à traiter.</div>
+
+        <div id="cordeur-empty" class="empty-box">
+          Aucune raquette à traiter.
+        </div>
+
         <ul id="cordeur-list" class="queue-list"></ul>
       </section>
     </main>
