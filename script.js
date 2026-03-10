@@ -136,11 +136,7 @@ async function finishRacket(id, phone, player) {
   try {
     const formattedPhone = phone.replace(/^0/, "+33");
 
-    console.log("APPEL TWILIO VERS :", SMS_WEBHOOK_URL);
-    console.log("NUMERO ENVOYE :", formattedPhone);
-    console.log("JOUEUR ENVOYE :", player);
-
-    const response = await fetch(SMS_WEBHOOK_URL, {
+    await fetch(SMS_WEBHOOK_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -150,34 +146,6 @@ async function finishRacket(id, phone, player) {
         player: player
       })
     });
-
-    const text = await response.text();
-    console.log("REPONSE TWILIO :", response.status, text);
-
-  } catch (err) {
-    console.error("ERREUR FETCH TWILIO :", err);
-  }
-
-  await loadQueue();
-}
-
-  try {
-
-    const formattedPhone = phone.replace(/^0/, "+33");
-
-    await fetch(SMS_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        phone: formattedPhone,
-        player
-      })
-    });
-
-    console.log("SMS envoyé à", formattedPhone);
-
   } catch (err) {
     console.error("Erreur envoi SMS :", err);
   }
