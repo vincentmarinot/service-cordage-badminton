@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://jbclmwoyrrvmtqagnati.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
-const SMS_WEBHOOK_URL = "https://hello-messaging-7093-47fdmw.twil.io/send-sms";
+const CORDEUR_PASSWORD = "Badlab1996!";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -14,6 +14,7 @@ const queueEmpty = document.getElementById("queue-empty");
 const cordeurEmpty = document.getElementById("cordeur-empty");
 
 let queue = [];
+let cordeurUnlocked = false;
 
 function getEstimatedTime(index) {
   return (index + 1) * 30;
@@ -67,7 +68,7 @@ function buildQueueItem(item, index, isCordeur = false) {
     btn.textContent = "Raquette terminée";
 
     btn.onclick = async function () {
-      await finishRacket(item.id, item.phone, item.player);
+      await finishRacket(item.id);
     };
 
     li.appendChild(btn);
@@ -78,9 +79,7 @@ function buildQueueItem(item, index, isCordeur = false) {
 
 function renderPublicQueue() {
   queueList.innerHTML = "";
-
-  queueCount.textContent =
-    `${queue.length} ${queue.length > 1 ? "raquettes" : "raquette"}`;
+  queueCount.textContent = `${queue.length} ${queue.length > 1 ? "raquettes" : "raquette"}`;
 
   if (queue.length === 0) {
     queueEmpty.style.display = "block";
@@ -131,8 +130,7 @@ async function loadQueue() {
   renderAll();
 }
 
-async function finishRacket(id, phone, player) {
-
+async function finishRacket(id) {
   const { error } = await sb
     .from("cordages")
     .update({ status: "done" })
@@ -144,48 +142,27 @@ async function finishRacket(id, phone, player) {
     return;
   }
 
-  try {
-
-    const formattedPhone = phone.replace(/^0/, "+33");
-
-    await fetch(SMS_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        phone: formattedPhone,
-        player: player
-      })
-    });
-
-  } catch (err) {
-    console.error("Erreur envoi SMS :", err);
-  }
-
   await loadQueue();
 }
 
 form.addEventListener("submit", async function (e) {
-
   e.preventDefault();
 
   const player = document.getElementById("player-name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
   const racket = document.getElementById("racket-name").value.trim();
   const string_type = document.getElementById("string-type").value;
   const tension = document.getElementById("tension").value.trim();
   const priority = document.getElementById("priority").checked;
 
-  if (!player || !phone || !racket || !tension) {
-    alert("Merci de remplir tous les champs.");
+  if (!player || !racket || !tension) {
+    alert("Merci de remplir tous les champs obligatoires.");
     return;
   }
 
   const { error } = await sb.from("cordages").insert([
     {
       player,
-      phone,
+      phone: "",
       racket,
       string_type,
       tension,
@@ -201,13 +178,26 @@ form.addEventListener("submit", async function (e) {
   }
 
   form.reset();
-
   await loadQueue();
-
   alert("Raquette enregistrée ✅");
 });
 
 cordeurBtn.addEventListener("click", function () {
+  if (!cordeurUnlocked) {
+    const enteredPassword = prompt("Mot de passe espace cordeur :");
+
+    if (enteredPassword === null) {
+      return;
+    }
+
+    if (enteredPassword !== CORDEUR_PASSWORD) {
+      alert("Mot de passe incorrect.");
+      return;
+    }
+
+    cordeurUnlocked = true;
+  }
+
   cordeurPanel.classList.toggle("hidden");
 });
 
