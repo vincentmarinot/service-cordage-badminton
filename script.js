@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://jbclmwoyrrvmtqagnati.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
-const SMS_WEBHOOK_URL = "https://hello-messaging-7093-47fdmw.twil.io";
+const SMS_WEBHOOK_URL = "https://hello-messaging-7093-47fdmw.twil.io/send-sms";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -122,6 +122,7 @@ async function loadQueue() {
 }
 
 async function finishRacket(id, phone, player) {
+
   const { error } = await sb
     .from("cordages")
     .update({ status: "done" })
@@ -134,16 +135,22 @@ async function finishRacket(id, phone, player) {
   }
 
   try {
+
+    const formattedPhone = phone.replace(/^0/, "+33");
+
     await fetch(SMS_WEBHOOK_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        phone,
+        phone: formattedPhone,
         player
       })
     });
+
+    console.log("SMS envoyé à", formattedPhone);
+
   } catch (err) {
     console.error("Erreur envoi SMS :", err);
   }
