@@ -1,125 +1,144 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Service Cordage Badminton</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Cordage Badminton</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 <body>
-  <div class="bg-shuttle bg-shuttle-1"></div>
-  <div class="bg-shuttle bg-shuttle-2"></div>
 
-  <header class="hero">
-    <div class="hero-badge">🏸 Stand de cordage</div>
-    <h1>Service Cordage Badminton</h1>
-    <p class="hero-subtitle">
-      Déposez votre raquette, consultez la file d’attente en direct
-      et retrouvez votre ordre de passage instantanément.
-    </p>
-  </header>
+<header class="hero">
+<h1>🏸 Service Cordage Badminton</h1>
+<p>Déposez votre raquette et consultez la file d’attente en direct</p>
+</header>
 
-  <main class="container">
-    <section class="card form-card">
-      <div class="section-title">
-        <span class="section-icon">📝</span>
-        <div>
-          <h2>Déposer une raquette</h2>
-          <p>Remplissez les informations ci-dessous.</p>
-        </div>
-      </div>
+<main class="container">
 
-      <form id="add-form" class="form-grid">
-        <div class="field full">
-          <label for="player-name">Nom du joueur</label>
-          <input id="player-name" type="text" placeholder="Ex : Martin" required />
-        </div>
+<section class="card">
 
-        <div class="field">
-          <label for="racket-name">Raquette</label>
-          <input id="racket-name" type="text" placeholder="Ex : Arcsaber 11 Pro" required />
-        </div>
+<h2>Déposer une raquette</h2>
 
-        <div class="field">
-          <label for="string-type">Cordage</label>
-          <select id="string-type" required>
-            <option value="BG65">BG65</option>
-            <option value="BG80">BG80</option>
-            <option value="BG80 Power">BG80 Power</option>
-            <option value="Aerobite">Aerobite</option>
-            <option value="Exbolt 63">Exbolt 63</option>
-            <option value="Exbolt 65">Exbolt 65</option>
-            <option value="Autre">Autre</option>
-          </select>
-        </div>
+<form id="add-form" class="form-grid">
 
-        <div class="field">
-          <label for="tension">Tension (kg)</label>
-          <input id="tension" type="number" step="0.5" min="7" max="16" placeholder="Ex : 11" required />
-        </div>
+<div class="field full">
+<label>Nom du joueur</label>
+<input id="player-name" required>
+</div>
 
-        <div class="field checkbox-field full">
-          <label class="checkbox-label">
-            <input id="priority" type="checkbox" />
-            <span>Priorité match</span>
-          </label>
-        </div>
+<div class="field">
+<label>Raquette</label>
+<input id="racket-name" required>
+</div>
 
-        <div class="full">
-          <button type="submit" class="primary-btn">Ajouter à la file</button>
-        </div>
-      </form>
-    </section>
+<div class="field">
+<label>Cordage</label>
 
-    <section class="card queue-card">
-      <div class="queue-header">
-        <div class="section-title">
-          <span class="section-icon">📋</span>
-          <div>
-            <h2>File d’attente</h2>
-            <p>Ordre de passage en direct.</p>
-          </div>
-        </div>
+<select id="string-type">
+<option>BG65</option>
+<option>BG80</option>
+<option>BG80 Power</option>
+<option>Aerobite</option>
+<option>Exbolt 63</option>
+<option>Exbolt 65</option>
+<option>Autre</option>
+</select>
 
-        <div class="queue-counter" id="queue-count">0 raquette</div>
-      </div>
+</div>
 
-      <div id="queue-empty" class="empty-state">
-        Aucune raquette en attente pour le moment.
-      </div>
+<div class="field">
+<label>Tension (kg)</label>
+<input id="tension" type="number" step="0.5" required>
+</div>
 
-      <ul id="queue-list" class="queue-list"></ul>
-    </section>
+<div class="field">
+<label>Prix (€)</label>
+<input id="price" type="number" value="20">
+</div>
 
-    <section class="cordeur-zone">
-      <button id="cordeur-btn" class="secondary-btn">Espace cordeur</button>
+<div class="field full">
+<label>Commentaire</label>
+<textarea id="comment" placeholder="Demande particulière"></textarea>
+</div>
 
-      <section id="cordeur-panel" class="card cordeur-card hidden">
-        <div class="section-title">
-          <span class="section-icon">🔐</span>
-          <div>
-            <h2>Panneau cordeur</h2>
-            <p>Réservé au cordeur pour valider les raquettes terminées.</p>
-          </div>
-        </div>
+<div class="field checkbox-field full">
+<label class="checkbox-label">
+<input id="priority" type="checkbox">
+Priorité match
+</label>
+</div>
 
-        <div id="cordeur-empty" class="empty-state">
-          Aucune raquette à traiter.
-        </div>
+<button class="primary-btn full">Ajouter</button>
 
-        <ul id="cordeur-list" class="queue-list"></ul>
-      </section>
-    </section>
-  </main>
+</form>
 
-  <footer class="footer">
-    <p>🏸 File d’attente de cordage en direct</p>
-  </footer>
+</section>
 
-  <script src="script.js"></script>
+<section class="card">
+
+<div class="queue-header">
+<h2>File d’attente</h2>
+<div id="queue-count">0</div>
+</div>
+
+<ul id="queue-list"></ul>
+
+<div id="queue-empty">Aucune raquette</div>
+
+</section>
+
+<section class="card">
+
+<button id="cordeur-btn" class="secondary-btn">
+Espace cordeur
+</button>
+
+<div id="cordeur-panel" class="hidden">
+
+<h2>Stats</h2>
+
+<div class="stats-grid">
+
+<div class="stat-card">
+<div class="stat-title">Raquettes aujourd’hui</div>
+<div id="stat-rackets-today" class="stat-value">0</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-title">Revenus aujourd’hui</div>
+<div id="stat-income-today" class="stat-value">0€</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-title">Revenus tournoi</div>
+<div id="stat-income-total" class="stat-value">0€</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-title">Cordage le + utilisé</div>
+<div id="stat-top-string" class="stat-value">-</div>
+</div>
+
+</div>
+
+<ul id="cordeur-list"></ul>
+
+</div>
+
+</section>
+
+</main>
+
+<script src="script.js"></script>
+
 </body>
 </html>
