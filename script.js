@@ -16,6 +16,9 @@ const queueCount = document.getElementById("queue-count");
 const cordeurBtn = document.getElementById("cordeur-btn");
 const cordeurPanel = document.getElementById("cordeur-panel");
 
+const historyList = document.getElementById("history-list");
+const historyEmpty = document.getElementById("history-empty");
+
 let queue = [];
 let cordeurUnlocked = false;
 
@@ -90,6 +93,69 @@ return li;
 
 }
 
+async function loadHistory(){
+
+const {data,error} = await sb
+.from("cordages")
+.select("*")
+.eq("status","done")
+.order("finished_at",{ascending:false})
+.limit(10);
+
+if(error){
+console.error(error);
+return;
+}
+
+historyList.innerHTML="";
+
+if(!data || data.length===0){
+
+historyEmpty.style.display="block";
+return;
+
+}
+
+historyEmpty.style.display="none";
+
+data.forEach(r=>{
+
+const li = document.createElement("li");
+
+li.className="queue-item";
+
+const date = new Date(r.finished_at);
+
+const hour = date.getHours().toString().padStart(2,"0");
+const min = date.getMinutes().toString().padStart(2,"0");
+
+li.innerHTML=`
+
+<div class="queue-row">
+
+<div class="player">${r.player}</div>
+
+<div class="pos">${hour}:${min}</div>
+
+</div>
+
+<div class="details">
+
+${r.racket}<br>
+${r.string_type} · ${r.tension}kg · ${r.price}€
+
+</div>
+
+${r.comment ? `<div class="comment">💬 ${r.comment}</div>` : ""}
+
+`;
+
+historyList.appendChild(li);
+
+});
+
+}
+
 function render(){
 
 queueList.innerHTML="";
@@ -122,6 +188,8 @@ queue=data || [];
 render();
 
 updateStats();
+
+loadHistory();
 
 }
 
