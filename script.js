@@ -1,223 +1,260 @@
 const SUPABASE_URL = "https://jbclmwoyrrvmtqagnati.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
+
 const CORDEUR_PASSWORD = "Badlab1996!";
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const TIME_PER_RACKET = 22;
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const form = document.getElementById("add-form");
 const queueList = document.getElementById("queue-list");
 const cordeurList = document.getElementById("cordeur-list");
+
+const queueCount = document.getElementById("queue-count");
+
 const cordeurBtn = document.getElementById("cordeur-btn");
 const cordeurPanel = document.getElementById("cordeur-panel");
-const queueCount = document.getElementById("queue-count");
-const queueEmpty = document.getElementById("queue-empty");
-const cordeurEmpty = document.getElementById("cordeur-empty");
 
 let queue = [];
 let cordeurUnlocked = false;
 
-function getEstimatedTime(index) {
-  return (index + 1) * 30;
+function getEstimatedTime(index){
+return (index+1)*TIME_PER_RACKET;
 }
 
-function formatWait(index) {
-  const minutes = getEstimatedTime(index);
+function formatWait(index){
 
-  if (minutes < 60) return `${minutes} min estimées`;
+const m = getEstimatedTime(index);
 
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+if(m<60) return m+" min";
 
-  if (mins === 0) return `${hours}h estimée`;
+const h = Math.floor(m/60);
+const min = m%60;
 
-  return `${hours}h${mins} estimées`;
+return h+"h"+min;
+
 }
 
-function formatReadyTime(index) {
-  const minutesToAdd = getEstimatedTime(index);
-  const now = new Date();
-  const ready = new Date(now.getTime() + minutesToAdd * 60000);
+function buildItem(item,index,isCordeur=false){
 
-  const hours = ready.getHours().toString().padStart(2, "0");
-  const minutes = ready.getMinutes().toString().padStart(2, "0");
+const li = document.createElement("li");
 
-  return `${hours}:${minutes}`;
+li.className="queue-item";
+
+li.innerHTML=`
+
+<div class="queue-row">
+
+<div class="player">${item.player}</div>
+
+<div class="pos">#${index+1}</div>
+
+</div>
+
+<div class="details">
+
+${item.racket}
+
+<br>
+
+${item.string_type} · ${item.tension}kg
+
+</div>
+
+<div class="wait">
+
+⏱ ${formatWait(index)}
+
+</div>
+
+${item.comment ? `<div class="comment">💬 ${item.comment}</div>` : ""}
+
+`;
+
+if(isCordeur){
+
+const btn = document.createElement("button");
+
+btn.className="finish-btn";
+
+btn.textContent="Terminée";
+
+btn.onclick=()=>finishRacket(item.id);
+
+li.appendChild(btn);
+
 }
 
-function buildQueueItem(item, index, isCordeur = false) {
-  const li = document.createElement("li");
-  li.className = "queue-item";
+return li;
 
-  if (item.priority) {
-    li.classList.add("priority");
-  }
-
-  li.innerHTML = `
-    <div class="queue-row-top">
-      <div class="queue-player">${item.player}</div>
-      <div class="queue-position">#${index + 1}</div>
-    </div>
-
-    <div class="queue-details">
-      ${item.racket}<br>
-      ${item.string_type} · ${item.tension} kg
-    </div>
-
-    <div class="queue-wait">
-      ⏱ ${formatWait(index)} • Retrait estimé vers ${formatReadyTime(index)}
-    </div>
-
-    ${item.priority ? `<div class="queue-priority-tag">Priorité match</div>` : ""}
-  `;
-
-  if (isCordeur) {
-    const btn = document.createElement("button");
-    btn.className = "finish-btn";
-    btn.textContent = "Raquette terminée";
-
-    btn.onclick = async function () {
-      await finishRacket(item.id);
-    };
-
-    li.appendChild(btn);
-  }
-
-  return li;
 }
 
-function renderPublicQueue() {
-  queueList.innerHTML = "";
-  queueCount.textContent = `${queue.length} ${queue.length > 1 ? "raquettes" : "raquette"}`;
+function render(){
 
-  if (queue.length === 0) {
-    queueEmpty.style.display = "block";
-    return;
-  }
+queueList.innerHTML="";
+cordeurList.innerHTML="";
 
-  queueEmpty.style.display = "none";
+queueCount.textContent=queue.length+" raquettes";
 
-  queue.forEach((item, index) => {
-    queueList.appendChild(buildQueueItem(item, index, false));
-  });
-}
+queue.forEach((item,i)=>{
 
-function renderCordeurQueue() {
-  cordeurList.innerHTML = "";
+queueList.appendChild(buildItem(item,i,false));
+cordeurList.appendChild(buildItem(item,i,true));
 
-  if (queue.length === 0) {
-    cordeurEmpty.style.display = "block";
-    return;
-  }
-
-  cordeurEmpty.style.display = "none";
-
-  queue.forEach((item, index) => {
-    cordeurList.appendChild(buildQueueItem(item, index, true));
-  });
-}
-
-function renderAll() {
-  renderPublicQueue();
-  renderCordeurQueue();
-}
-
-async function loadQueue() {
-  const { data, error } = await sb
-    .from("cordages")
-    .select("*")
-    .eq("status", "waiting")
-    .order("priority", { ascending: false })
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  queue = data || [];
-  renderAll();
-}
-
-async function finishRacket(id) {
-  const { error } = await sb
-    .from("cordages")
-    .update({ status: "done" })
-    .eq("id", id);
-
-  if (error) {
-    alert("Erreur lors de la validation de la raquette.");
-    console.error(error);
-    return;
-  }
-
-  await loadQueue();
-}
-
-form.addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const player = document.getElementById("player-name").value.trim();
-  const racket = document.getElementById("racket-name").value.trim();
-  const string_type = document.getElementById("string-type").value;
-  const tension = document.getElementById("tension").value.trim();
-  const priority = document.getElementById("priority").checked;
-
-  if (!player || !racket || !tension) {
-    alert("Merci de remplir tous les champs obligatoires.");
-    return;
-  }
-
-  const { error } = await sb.from("cordages").insert([
-    {
-      player,
-      phone: "",
-      racket,
-      string_type,
-      tension,
-      priority,
-      status: "waiting"
-    }
-  ]);
-
-  if (error) {
-    alert("Erreur lors de l’enregistrement.");
-    console.error(error);
-    return;
-  }
-
-  form.reset();
-  await loadQueue();
-  alert("Raquette enregistrée ✅");
 });
 
-cordeurBtn.addEventListener("click", function () {
-  if (!cordeurUnlocked) {
-    const enteredPassword = prompt("Mot de passe espace cordeur :");
+}
 
-    if (enteredPassword === null) {
-      return;
-    }
+async function loadQueue(){
 
-    if (enteredPassword !== CORDEUR_PASSWORD) {
-      alert("Mot de passe incorrect.");
-      return;
-    }
+const {data,error} = await sb
+.from("cordages")
+.select("*")
+.eq("status","waiting")
+.order("priority",{ascending:false})
+.order("created_at",{ascending:true});
 
-    cordeurUnlocked = true;
-  }
+if(error) return;
 
-  cordeurPanel.classList.toggle("hidden");
+queue=data;
+
+render();
+
+updateStats();
+
+}
+
+async function finishRacket(id){
+
+await sb
+.from("cordages")
+.update({
+status:"done",
+finished_at:new Date()
+})
+.eq("id",id);
+
+loadQueue();
+
+}
+
+function updateStats(){
+
+const today = new Date().toISOString().split("T")[0];
+
+let racketsToday=0;
+let incomeToday=0;
+let incomeTotal=0;
+
+let strings={};
+
+queue.forEach(r=>{
+
+incomeTotal+=r.price||0;
+
+if(r.created_at.startsWith(today)){
+
+racketsToday++;
+
+incomeToday+=r.price||0;
+
+}
+
+strings[r.string_type]=(strings[r.string_type]||0)+1;
+
 });
+
+let top="-";
+let max=0;
+
+for(const s in strings){
+
+if(strings[s]>max){
+
+max=strings[s];
+top=s;
+
+}
+
+}
+
+document.getElementById("stat-rackets-today").textContent=racketsToday;
+
+document.getElementById("stat-income-today").textContent=incomeToday+"€";
+
+document.getElementById("stat-income-total").textContent=incomeTotal+"€";
+
+document.getElementById("stat-top-string").textContent=top;
+
+}
+
+form.addEventListener("submit",async(e)=>{
+
+e.preventDefault();
+
+const player=document.getElementById("player-name").value;
+
+const racket=document.getElementById("racket-name").value;
+
+const string_type=document.getElementById("string-type").value;
+
+const tension=document.getElementById("tension").value;
+
+const price=document.getElementById("price").value;
+
+const comment=document.getElementById("comment").value;
+
+const priority=document.getElementById("priority").checked;
+
+await sb.from("cordages").insert([{
+
+player,
+racket,
+string_type,
+tension,
+price,
+comment,
+priority,
+status:"waiting"
+
+}]);
+
+form.reset();
+
+loadQueue();
+
+});
+
+cordeurBtn.onclick=()=>{
+
+if(!cordeurUnlocked){
+
+const p = prompt("Mot de passe");
+
+if(p!==CORDEUR_PASSWORD){
+
+alert("Incorrect");
+
+return;
+
+}
+
+cordeurUnlocked=true;
+
+}
+
+cordeurPanel.classList.toggle("hidden");
+
+};
 
 loadQueue();
 
 sb
-  .channel("realtime-cordages")
-  .on(
-    "postgres_changes",
-    { event: "*", schema: "public", table: "cordages" },
-    () => {
-      loadQueue();
-    }
-  )
-  .subscribe();
+.channel("realtime")
+.on(
+"postgres_changes",
+{event:"*",schema:"public",table:"cordages"},
+loadQueue
+)
+.subscribe();
