@@ -3,7 +3,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
 
 const CORDEUR_PASSWORD = "Badlab1996!";
 
-const TIME_PER_RACKET = 22;
+const TIME_PER_RACKET = 30;
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
