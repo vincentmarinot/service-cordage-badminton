@@ -117,7 +117,7 @@ const {data,error} = await sb
 
 if(error) return;
 
-queue=data;
+queue=data || [];
 
 render();
 
@@ -131,7 +131,7 @@ await sb
 .from("cordages")
 .update({
 status:"done",
-finished_at:new Date()
+finished_at:new Date().toISOString()
 })
 .eq("id",id);
 
@@ -139,25 +139,57 @@ loadQueue();
 
 }
 
-function updateStats(){
+async function updateStats(){
+
+const {data,error} = await sb
+.from("cordages")
+.select("*")
+.eq("status","done");
+
+if(error) return;
 
 const today = new Date().toISOString().split("T")[0];
 
-let racketsToday=0;
-let incomeToday=0;
-let incomeTotal=0;
+let racketsToday = 0;
+let incomeToday = 0;
+let incomeTotal = 0;
 
-let strings={};
+let strings = {};
 
-queue.forEach(r=>{
+data.forEach(r=>{
 
-incomeTotal+=r.price||0;
+incomeTotal += Number(r.price || 0);
 
-if(r.created_at.startsWith(today)){
+if(r.finished_at && r.finished_at.startsWith(today)){
 
 racketsToday++;
 
-incomeToday+=r.price||0;
+incomeToday += Number(r.price || 0);
+
+}
+
+strings[r.string_type] = (strings[r.string_type] || 0) + 1;
+
+});
+
+let top = "-";
+let max = 0;
+
+for(const s in strings){
+
+if(strings[s] > max){
+
+max = strings[s];
+top = s;
+
+}
+
+}
+
+document.getElementById("stat-rackets-today").textContent = racketsToday;
+document.getElementById("stat-income-today").textContent = incomeToday + "€";
+document.getElementById("stat-income-total").textContent = incomeTotal + "€";
+document.getElementById("stat-top-string").textContent = top;
 
 }
 
