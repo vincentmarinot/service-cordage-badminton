@@ -1,5 +1,5 @@
-const SUPABASE_URL = "TON_URL_SUPABASE";
-const SUPABASE_ANON_KEY = "TA_CLE_ANON_SUPABASE";
+const SUPABASE_URL = "https://jbclmwoyrrvmtqagnati.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go";
 
 const CORDEUR_PASSWORD = "Badlab1996!";
 const TIME_PER_RACKET = 30;
