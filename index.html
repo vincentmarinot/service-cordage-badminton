@@ -1,152 +1,153 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Service Cordage Badminton</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LardeSports • Service cordage badminton</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="styles.css">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <div class="page-bg"></div>
 
-<header class="hero">
-<h1>🏸 Service Cordage Badminton</h1>
-<p>Déposez votre raquette et consultez la file d’attente en direct</p>
-</header>
+  <header class="hero">
+    <div class="hero__logo-wrap">
+      <img src="logo.png" alt="Logo LardeSports" class="hero__logo" />
+    </div>
 
-<main class="container">
+    <div class="hero__content">
+      <span class="badge">LardeSports • Badminton</span>
+      <h1>Service de cordage</h1>
+      <p>
+        Déposez votre raquette, consultez la file d’attente en direct et laissez le cordeur gérer la progression.
+      </p>
+    </div>
+  </header>
 
-<section class="card">
+  <main class="layout">
+    <section class="panel panel--form">
+      <div class="panel__head">
+        <h2>Déposer une raquette</h2>
+        <p>Ajout instantané dans la file d’attente.</p>
+      </div>
 
-<h2>Déposer une raquette</h2>
+      <form id="add-form" class="form-grid">
+        <div class="field field--full">
+          <label for="player-name">Nom du joueur</label>
+          <input id="player-name" name="playerName" type="text" required placeholder="Ex. Julien Martin" />
+        </div>
 
-<form id="add-form" class="form-grid">
+        <div class="field">
+          <label for="racket-name">Raquette</label>
+          <input id="racket-name" name="racketName" type="text" required placeholder="Ex. Arcsaber 11 Pro" />
+        </div>
 
-<div class="field full">
-<label>Nom du joueur</label>
-<input id="player-name" required>
-</div>
+        <div class="field">
+          <label for="string-type">Cordage</label>
+          <select id="string-type" name="stringType" required>
+            <option value="BG65">BG65</option>
+            <option value="BG80">BG80</option>
+            <option value="BG80 Power">BG80 Power</option>
+            <option value="Aerobite">Aerobite</option>
+            <option value="Exbolt 63">Exbolt 63</option>
+            <option value="Exbolt 65">Exbolt 65</option>
+            <option value="VBS 58">VBS 58</option>
+            <option value="VBS 66">VBS 66</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
 
-<div class="field">
-<label>Raquette</label>
-<input id="racket-name" required>
-</div>
+        <div class="field">
+          <label for="tension">Tension (kg)</label>
+          <input id="tension" name="tension" type="number" step="0.5" min="7" max="16" required placeholder="Ex. 11" />
+        </div>
 
-<div class="field">
-<label>Cordage</label>
+        <div class="field field--full">
+          <label for="comment">Commentaire</label>
+          <textarea id="comment" name="comment" rows="4" placeholder="Demande particulière, urgence, heure de match..."></textarea>
+        </div>
 
-<select id="string-type">
-<option>BG65</option>
-<option>BG80</option>
-<option>BG80 Power</option>
-<option>Aerobite</option>
-<option>Exbolt 63</option>
-<option>Exbolt 65</option>
-<option>Autre</option>
-</select>
+        <div class="field field--full field--checkbox">
+          <label class="checkbox-label" for="priority">
+            <input id="priority" name="priority" type="checkbox" />
+            Priorité match
+          </label>
+        </div>
 
-</div>
+        <button type="submit" class="btn btn--primary field--full">Ajouter à la file</button>
+      </form>
 
-<div class="field">
-<label>Tension (kg)</label>
-<input id="tension" type="number" step="0.5" required>
-</div>
+      <p id="form-message" class="form-message" aria-live="polite"></p>
+    </section>
 
-<div class="field">
-<label>Prix (€)</label>
-<input id="price" type="number" value="20">
-</div>
+    <section class="panel panel--queue">
+      <div class="panel__head panel__head--inline">
+        <div>
+          <h2>File d’attente</h2>
+          <p>Vue joueur en temps réel.</p>
+        </div>
+        <div id="queue-count" class="queue-count">0</div>
+      </div>
 
-<div class="field full">
-<label>Commentaire</label>
-<textarea id="comment" placeholder="Demande particulière"></textarea>
-</div>
+      <div id="queue-empty" class="empty-state">Aucune raquette en attente pour le moment.</div>
+      <ul id="queue-list" class="queue-list"></ul>
+    </section>
 
-<div class="field checkbox-field full">
-<label class="checkbox-label">
-<input id="priority" type="checkbox">
-Priorité match
-</label>
-</div>
+    <section class="panel panel--admin">
+      <div class="panel__head panel__head--inline">
+        <div>
+          <h2>Espace cordeur</h2>
+          <p>Gestion, progression et historique.</p>
+        </div>
+        <button id="cordeur-btn" type="button" class="btn btn--ghost">Déverrouiller</button>
+      </div>
 
-<button class="primary-btn full">Ajouter</button>
+      <div id="cordeur-panel" class="admin-panel hidden">
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-card__label">En attente</span>
+            <strong id="stat-waiting" class="stat-card__value">0</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-card__label">Terminées aujourd’hui</span>
+            <strong id="stat-done-today" class="stat-card__value">0</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-card__label">Terminées tournoi</span>
+            <strong id="stat-done-total" class="stat-card__value">0</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-card__label">Cordage le plus utilisé</span>
+            <strong id="stat-top-string" class="stat-card__value">—</strong>
+          </article>
+        </div>
 
-</form>
+        <div class="admin-columns">
+          <div>
+            <h3>Raquettes à traiter</h3>
+            <div id="admin-empty" class="empty-state">Aucune raquette à gérer.</div>
+            <ul id="cordeur-list" class="admin-list"></ul>
+          </div>
 
-</section>
+          <div>
+            <h3>Historique récent</h3>
+            <div id="history-empty" class="empty-state">Aucune raquette terminée pour le moment.</div>
+            <ul id="history-list" class="history-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-<section class="card">
+  <footer class="footer">
+    <span>Interface LardeSports • thème badminton</span>
+  </footer>
 
-<div class="queue-header">
-<h2>File d’attente</h2>
-<div id="queue-count">0</div>
-</div>
-
-<ul id="queue-list"></ul>
-
-<div id="queue-empty">Aucune raquette</div>
-
-</section>
-
-<section class="card">
-
-<button id="cordeur-btn" class="secondary-btn">
-Espace cordeur
-</button>
-
-<div id="cordeur-panel" class="hidden">
-
-<h2>Stats</h2>
-
-<div class="stats-grid">
-
-<div class="stat-card">
-<div class="stat-title">Raquettes aujourd’hui</div>
-<div id="stat-rackets-today" class="stat-value">0</div>
-</div>
-
-<div class="stat-card">
-<div class="stat-title">Revenus aujourd’hui</div>
-<div id="stat-income-today" class="stat-value">0€</div>
-</div>
-
-<div class="stat-card">
-<div class="stat-title">Revenus tournoi</div>
-<div id="stat-income-total" class="stat-value">0€</div>
-</div>
-
-<div class="stat-card">
-<div class="stat-title">Cordage le + utilisé</div>
-<div id="stat-top-string" class="stat-value">-</div>
-</div>
-
-</div>
-
-  <h2>Historique récent</h2>
-
-<ul id="history-list" class="queue-list"></ul>
-
-<div id="history-empty" class="empty-state">
-Aucune raquette terminée pour le moment
-</div>
-  
-<ul id="cordeur-list"></ul>
-
-</div>
-
-</section>
-
-</main>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
