@@ -3,53 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LardeSports • Service cordage badminton</title>
+  <title>LardeSports • Service de cordage badminton</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
 
   <link rel="stylesheet" href="styles.css" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="page-bg"></div>
 
   <header class="hero">
-    <div class="hero__logo-wrap">
-      <img src="logo.png" alt="Logo LardeSports" class="hero__logo" />
-    </div>
+    <div class="hero__inner">
+      <div class="hero__brand">
+        <div class="hero__logo-box">
+          <img src="logo.png" alt="Logo LardeSports" class="hero__logo" />
+        </div>
 
-    <div class="hero__content">
-      <span class="badge">LardeSports • Badminton</span>
-      <h1>Service de cordage</h1>
-      <p>
-        Déposez votre raquette, consultez la file d’attente en direct et laissez le cordeur gérer la progression.
-      </p>
+        <div class="hero__content">
+          <span class="badge">LardeSports • Alpes du Sud</span>
+          <h1>Service de cordage badminton</h1>
+          <p>
+            Déposez votre raquette et consultez la file d’attente en direct.
+          </p>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="layout">
-    <section class="panel panel--form">
+    <section class="panel">
       <div class="panel__head">
         <h2>Déposer une raquette</h2>
-        <p>Ajout instantané dans la file d’attente.</p>
+        <p>Ajout immédiat dans la file.</p>
       </div>
 
       <form id="add-form" class="form-grid">
         <div class="field field--full">
           <label for="player-name">Nom du joueur</label>
-          <input id="player-name" name="playerName" type="text" required placeholder="Ex. Julien Martin" />
+          <input
+            id="player-name"
+            type="text"
+            required
+            placeholder="Ex. Julien Martin"
+          />
         </div>
 
         <div class="field">
           <label for="racket-name">Raquette</label>
-          <input id="racket-name" name="racketName" type="text" required placeholder="Ex. Arcsaber 11 Pro" />
+          <input
+            id="racket-name"
+            type="text"
+            required
+            placeholder="Ex. Arcsaber 11 Pro"
+          />
         </div>
 
         <div class="field">
           <label for="string-type">Cordage</label>
-          <select id="string-type" name="stringType" required>
+          <select id="string-type" required>
             <option value="BG65">BG65</option>
             <option value="BG80">BG80</option>
             <option value="BG80 Power">BG80 Power</option>
@@ -64,28 +82,42 @@
 
         <div class="field">
           <label for="tension">Tension (kg)</label>
-          <input id="tension" name="tension" type="number" step="0.5" min="7" max="16" required placeholder="Ex. 11" />
+          <input
+            id="tension"
+            type="number"
+            step="0.5"
+            min="7"
+            max="16"
+            required
+            placeholder="Ex. 11"
+          />
         </div>
 
         <div class="field field--full">
           <label for="comment">Commentaire</label>
-          <textarea id="comment" name="comment" rows="4" placeholder="Demande particulière, urgence, heure de match..."></textarea>
+          <textarea
+            id="comment"
+            rows="4"
+            placeholder="Demande particulière, urgence, heure de match..."
+          ></textarea>
         </div>
 
         <div class="field field--full field--checkbox">
           <label class="checkbox-label" for="priority">
-            <input id="priority" name="priority" type="checkbox" />
+            <input id="priority" type="checkbox" />
             Priorité match
           </label>
         </div>
 
-        <button type="submit" class="btn btn--primary field--full">Ajouter à la file</button>
+        <button type="submit" class="btn btn--primary field--full">
+          Ajouter à la file
+        </button>
       </form>
 
       <p id="form-message" class="form-message" aria-live="polite"></p>
     </section>
 
-    <section class="panel panel--queue">
+    <section class="panel">
       <div class="panel__head panel__head--inline">
         <div>
           <h2>File d’attente</h2>
@@ -94,33 +126,41 @@
         <div id="queue-count" class="queue-count">0</div>
       </div>
 
-      <div id="queue-empty" class="empty-state">Aucune raquette en attente pour le moment.</div>
+      <div id="queue-empty" class="empty-state">
+        Aucune raquette en attente pour le moment.
+      </div>
+
       <ul id="queue-list" class="queue-list"></ul>
     </section>
 
-    <section class="panel panel--admin">
+    <section class="panel">
       <div class="panel__head panel__head--inline">
         <div>
           <h2>Espace cordeur</h2>
-          <p>Gestion, progression et historique.</p>
+          <p>Gestion de la file, progression et historique.</p>
         </div>
-        <button id="cordeur-btn" type="button" class="btn btn--ghost">Déverrouiller</button>
+        <button id="cordeur-btn" type="button" class="btn btn--ghost">
+          Déverrouiller
+        </button>
       </div>
 
-      <div id="cordeur-panel" class="admin-panel hidden">
+      <div id="cordeur-panel" class="hidden">
         <div class="stats-grid">
           <article class="stat-card">
             <span class="stat-card__label">En attente</span>
             <strong id="stat-waiting" class="stat-card__value">0</strong>
           </article>
+
           <article class="stat-card">
             <span class="stat-card__label">Terminées aujourd’hui</span>
             <strong id="stat-done-today" class="stat-card__value">0</strong>
           </article>
+
           <article class="stat-card">
             <span class="stat-card__label">Terminées tournoi</span>
             <strong id="stat-done-total" class="stat-card__value">0</strong>
           </article>
+
           <article class="stat-card">
             <span class="stat-card__label">Cordage le plus utilisé</span>
             <strong id="stat-top-string" class="stat-card__value">—</strong>
@@ -130,13 +170,17 @@
         <div class="admin-columns">
           <div>
             <h3>Raquettes à traiter</h3>
-            <div id="admin-empty" class="empty-state">Aucune raquette à gérer.</div>
+            <div id="admin-empty" class="empty-state">
+              Aucune raquette à gérer.
+            </div>
             <ul id="cordeur-list" class="admin-list"></ul>
           </div>
 
           <div>
             <h3>Historique récent</h3>
-            <div id="history-empty" class="empty-state">Aucune raquette terminée pour le moment.</div>
+            <div id="history-empty" class="empty-state">
+              Aucune raquette terminée pour le moment.
+            </div>
             <ul id="history-list" class="history-list"></ul>
           </div>
         </div>
@@ -145,7 +189,7 @@
   </main>
 
   <footer class="footer">
-    <span>Interface LardeSports • thème badminton</span>
+    <span>LardeSports • Interface cordage badminton</span>
   </footer>
 
   <script src="script.js"></script>
