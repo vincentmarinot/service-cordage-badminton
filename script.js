@@ -1,51 +1,51 @@
-const CONFIG = {
-  storageKey: "lardesports-cordage-v2",
-  cordeurPassword: "Badlab1996!",
-  timePerRacketMinutes: 30,
-  historyLimit: 20,
-  supabaseUrl: "https://jbclmwoyrrvmtqagnati.supabase.co",
-  supabaseAnonKey: "sb_publishable_T_XvMxifuWza8WZ-Kok1Jw_KX_v43go",
-  useSupabase: false,
-};
+const SUPABASE_URL = "TON_URL_SUPABASE";
+const SUPABASE_ANON_KEY = "TA_CLE_ANON_SUPABASE";
 
-const state = {
-  queue: [],
-  history: [],
-  adminUnlocked: false,
-  supabaseReady: false,
-};
+const CORDEUR_PASSWORD = "Badlab1996!";
+const TIME_PER_RACKET = 30;
 
-const els = {
-  form: document.getElementById("add-form"),
-  playerName: document.getElementById("player-name"),
-  racketName: document.getElementById("racket-name"),
-  stringType: document.getElementById("string-type"),
-  tension: document.getElementById("tension"),
-  comment: document.getElementById("comment"),
-  priority: document.getElementById("priority"),
-  formMessage: document.getElementById("form-message"),
-  queueList: document.getElementById("queue-list"),
-  queueEmpty: document.getElementById("queue-empty"),
-  queueCount: document.getElementById("queue-count"),
-  cordeurBtn: document.getElementById("cordeur-btn"),
-  cordeurPanel: document.getElementById("cordeur-panel"),
-  cordeurList: document.getElementById("cordeur-list"),
-  adminEmpty: document.getElementById("admin-empty"),
-  historyList: document.getElementById("history-list"),
-  historyEmpty: document.getElementById("history-empty"),
-  statWaiting: document.getElementById("stat-waiting"),
-  statDoneToday: document.getElementById("stat-done-today"),
-  statDoneTotal: document.getElementById("stat-done-total"),
-  statTopString: document.getElementById("stat-top-string"),
-};
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let supabaseClient = null;
+const form = document.getElementById("add-form");
+const playerNameInput = document.getElementById("player-name");
+const racketNameInput = document.getElementById("racket-name");
+const stringTypeInput = document.getElementById("string-type");
+const tensionInput = document.getElementById("tension");
+const commentInput = document.getElementById("comment");
+const priorityInput = document.getElementById("priority");
 
-function generateId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+const formMessage = document.getElementById("form-message");
+
+const queueList = document.getElementById("queue-list");
+const queueEmpty = document.getElementById("queue-empty");
+const queueCount = document.getElementById("queue-count");
+
+const cordeurBtn = document.getElementById("cordeur-btn");
+const cordeurPanel = document.getElementById("cordeur-panel");
+const cordeurList = document.getElementById("cordeur-list");
+const adminEmpty = document.getElementById("admin-empty");
+
+const historyList = document.getElementById("history-list");
+const historyEmpty = document.getElementById("history-empty");
+
+const statWaiting = document.getElementById("stat-waiting");
+const statDoneToday = document.getElementById("stat-done-today");
+const statDoneTotal = document.getElementById("stat-done-total");
+const statTopString = document.getElementById("stat-top-string");
+
+let allRackets = [];
+let cordeurUnlocked = false;
+
+function showMessage(message, type = "") {
+  formMessage.textContent = message;
+  formMessage.className = "form-message";
+  if (type) {
+    formMessage.classList.add(type);
+  }
 }
 
-function escapeHtml(value = "") {
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -54,451 +54,420 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-function getStoredData() {
-  try {
-    const raw = localStorage.getItem(CONFIG.storageKey);
-    if (!raw) {
-      return { queue: [], history: [] };
-    }
-
-    const parsed = JSON.parse(raw);
-    return {
-      queue: Array.isArray(parsed.queue) ? parsed.queue : [],
-      history: Array.isArray(parsed.history) ? parsed.history : [],
-    };
-  } catch (error) {
-    console.error("Erreur lecture stockage local:", error);
-    return { queue: [], history: [] };
-  }
-}
-
-function saveStoredData() {
-  localStorage.setItem(
-    CONFIG.storageKey,
-    JSON.stringify({
-      queue: state.queue,
-      history: state.history,
-    })
-  );
-}
-
-function setMessage(message, type = "success") {
-  els.formMessage.textContent = message;
-  els.formMessage.className = `form-message form-message--${type}`;
-}
-
-function clearMessage() {
-  els.formMessage.textContent = "";
-  els.formMessage.className = "form-message";
-}
-
-function formatDateTime(dateString) {
+function formatDate(dateString) {
+  if (!dateString) return "";
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat("fr-FR", {
+  return date.toLocaleString("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatTodayKey(dateString) {
-  const date = new Date(dateString);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function getTodayKey() {
-  return formatTodayKey(new Date().toISOString());
-}
-
-function getEstimatedMinutes(position) {
-  return (position + 1) * CONFIG.timePerRacketMinutes;
-}
-
-function formatDuration(minutes) {
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return rest === 0 ? `${hours}h` : `${hours}h${String(rest).padStart(2, "0")}`;
-}
-
-function normalizeQueueOrder() {
-  state.queue.sort((a, b) => {
-    if (a.priority !== b.priority) return a.priority ? -1 : 1;
-    if (a.status === "in_progress" && b.status !== "in_progress") return -1;
-    if (a.status !== "in_progress" && b.status === "in_progress") return 1;
-    return new Date(a.createdAt) - new Date(b.createdAt);
+    minute: "2-digit"
   });
 }
 
-function buildRacketFromForm() {
-  const playerName = els.playerName.value.trim();
-  const racketName = els.racketName.value.trim();
-  const stringType = els.stringType.value.trim();
-  const tension = Number(els.tension.value);
-  const comment = els.comment.value.trim();
-  const priority = els.priority.checked;
-
-  if (!playerName || !racketName || !stringType || Number.isNaN(tension)) {
-    throw new Error("Merci de remplir les champs obligatoires.");
-  }
-
-  return {
-    id: generateId(),
-    playerName,
-    racketName,
-    stringType,
-    tension,
-    comment,
-    priority,
-    status: "waiting",
-    createdAt: new Date().toISOString(),
-    startedAt: null,
-    completedAt: null,
-  };
+function isToday(dateString) {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const today = new Date();
+  return date.toDateString() === today.toDateString();
 }
 
-function resetForm() {
-  els.form.reset();
-  els.stringType.value = "BG65";
+function getEstimatedTime(index) {
+  return (index + 1) * TIME_PER_RACKET;
+}
+
+function formatWait(index) {
+  const totalMinutes = getEstimatedTime(index);
+
+  if (totalMinutes < 60) {
+    return `${totalMinutes} min`;
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (minutes === 0) {
+    return `${hours}h`;
+  }
+
+  return `${hours}h${String(minutes).padStart(2, "0")}`;
+}
+
+function getStatusLabel(status) {
+  switch (status) {
+    case "in_progress":
+      return "En cours";
+    case "done":
+      return "Terminée";
+    default:
+      return "En attente";
+  }
+}
+
+function getSortedWaitingRackets() {
+  return allRackets
+    .filter((item) => item.status !== "done")
+    .sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return a.priority ? -1 : 1;
+      }
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+}
+
+function getDoneRackets() {
+  return allRackets
+    .filter((item) => item.status === "done")
+    .sort((a, b) => new Date(b.done_at || b.updated_at) - new Date(a.done_at || a.updated_at));
 }
 
 function renderQueue() {
-  normalizeQueueOrder();
-  els.queueCount.textContent = String(state.queue.length);
-  els.queueEmpty.classList.toggle("hidden", state.queue.length > 0);
+  const waitingRackets = getSortedWaitingRackets();
 
-  if (state.queue.length === 0) {
-    els.queueList.innerHTML = "";
+  queueCount.textContent = waitingRackets.length.toString();
+  queueList.innerHTML = "";
+
+  if (waitingRackets.length === 0) {
+    queueEmpty.classList.remove("hidden");
     return;
   }
 
-  els.queueList.innerHTML = state.queue
-    .map((item, index) => {
-      const eta = formatDuration(getEstimatedMinutes(index));
-      const statusLabel = item.status === "in_progress" ? "En cours" : "En attente";
-      const commentHtml = item.comment
-        ? `<div class="comment-box">${escapeHtml(item.comment)}</div>`
-        : "";
+  queueEmpty.classList.add("hidden");
 
-      return `
-        <li class="queue-item">
-          <div class="queue-item__top">
-            <div class="name-block">
-              <span class="player-name">${escapeHtml(item.playerName)}</span>
-              <span class="racket-name">${escapeHtml(item.racketName)}</span>
-            </div>
-            <div class="eta">Attente estimée • ${eta}</div>
-          </div>
+  waitingRackets.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.className = "queue-item";
 
-          <div class="tags">
-            <span class="tag">${escapeHtml(item.stringType)}</span>
-            <span class="tag">${escapeHtml(item.tension)} kg</span>
-            <span class="tag tag--status">${statusLabel}</span>
-            ${item.priority ? '<span class="tag tag--priority">Priorité match</span>' : ""}
-          </div>
-          ${commentHtml}
-        </li>
-      `;
-    })
-    .join("");
+    const safeComment = item.comment ? escapeHtml(item.comment) : "";
+    const statusClass =
+      item.status === "in_progress" ? "chip--status-progress" : "chip--status-waiting";
+
+    li.innerHTML = `
+      <div class="queue-item__top">
+        <div>
+          <h3 class="queue-item__title">${escapeHtml(item.player_name)} • ${escapeHtml(item.racket_name)}</h3>
+        </div>
+        <div class="queue-item__wait">Attente estimée : ${formatWait(index)}</div>
+      </div>
+
+      <div class="queue-item__meta">
+        <span class="chip">${escapeHtml(item.string_type)}</span>
+        <span class="chip">${escapeHtml(item.tension)} kg</span>
+        <span class="chip ${statusClass}">${getStatusLabel(item.status)}</span>
+        ${item.priority ? '<span class="chip chip--priority">Priorité match</span>' : ""}
+      </div>
+
+      ${
+        safeComment
+          ? `<p class="queue-item__comment">${safeComment}</p>`
+          : ""
+      }
+    `;
+
+    queueList.appendChild(li);
+  });
 }
 
-function renderAdminList() {
-  els.adminEmpty.classList.toggle("hidden", state.queue.length > 0);
+function renderAdmin() {
+  if (!cordeurUnlocked) return;
 
-  if (state.queue.length === 0) {
-    els.cordeurList.innerHTML = "";
-    return;
+  const waitingRackets = getSortedWaitingRackets();
+  cordeurList.innerHTML = "";
+
+  if (waitingRackets.length === 0) {
+    adminEmpty.classList.remove("hidden");
+  } else {
+    adminEmpty.classList.add("hidden");
   }
 
-  els.cordeurList.innerHTML = state.queue
-    .map((item, index) => {
-      const canStart = item.status === "waiting";
-      const canDone = item.status === "in_progress" || item.status === "waiting";
+  waitingRackets.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.className = "admin-item";
 
-      return `
-        <li class="admin-item">
-          <div class="admin-item__top">
-            <div class="name-block">
-              <span class="player-name">${escapeHtml(item.playerName)}</span>
-              <span class="racket-name">${escapeHtml(item.racketName)}</span>
-            </div>
-            <div class="eta">#${index + 1}</div>
+    const statusClass =
+      item.status === "in_progress" ? "chip--status-progress" : "chip--status-waiting";
+
+    li.innerHTML = `
+      <div class="admin-item__top">
+        <div>
+          <h3 class="admin-item__title">${escapeHtml(item.player_name)} • ${escapeHtml(item.racket_name)}</h3>
+          <div class="admin-item__meta">
+            <span class="chip">${escapeHtml(item.string_type)}</span>
+            <span class="chip">${escapeHtml(item.tension)} kg</span>
+            <span class="chip ${statusClass}">${getStatusLabel(item.status)}</span>
+            <span class="chip">Déposée : ${formatDate(item.created_at)}</span>
+            <span class="chip">Attente : ${formatWait(index)}</span>
+            ${item.priority ? '<span class="chip chip--priority">Priorité match</span>' : ""}
           </div>
+        </div>
+      </div>
 
-          <div class="meta-line">
-            <span class="tag">${escapeHtml(item.stringType)}</span>
-            <span class="tag">${escapeHtml(item.tension)} kg</span>
-            ${item.priority ? '<span class="tag tag--priority">Priorité match</span>' : ""}
-            <span class="tag tag--status">${item.status === "in_progress" ? "En cours" : "En attente"}</span>
-          </div>
+      ${
+        item.comment
+          ? `<p class="admin-item__comment">${escapeHtml(item.comment)}</p>`
+          : ""
+      }
 
-          ${item.comment ? `<div class="comment-box">${escapeHtml(item.comment)}</div>` : ""}
+      <div class="admin-actions">
+        ${
+          item.status === "waiting"
+            ? `<button class="action-btn action-btn--start" data-action="start" data-id="${item.id}">Démarrer</button>`
+            : ""
+        }
+        <button class="action-btn action-btn--done" data-action="done" data-id="${item.id}">Terminée</button>
+        <button class="action-btn action-btn--delete" data-action="delete" data-id="${item.id}">Supprimer</button>
+      </div>
+    `;
 
-          <div class="meta" style="margin-top:12px;">Ajoutée le ${formatDateTime(item.createdAt)}</div>
-
-          <div class="action-row" style="margin-top:14px;">
-            ${canStart ? `<button class="action-btn action-btn--start" data-action="start" data-id="${item.id}">Démarrer</button>` : ""}
-            ${canDone ? `<button class="action-btn action-btn--done" data-action="done" data-id="${item.id}">Terminée</button>` : ""}
-            <button class="action-btn action-btn--delete" data-action="delete" data-id="${item.id}">Supprimer</button>
-          </div>
-        </li>
-      `;
-    })
-    .join("");
+    cordeurList.appendChild(li);
+  });
 }
 
 function renderHistory() {
-  const history = [...state.history]
-    .sort((a, b) => new Date(b.completedAt || b.createdAt) - new Date(a.completedAt || a.createdAt))
-    .slice(0, CONFIG.historyLimit);
+  if (!cordeurUnlocked) return;
 
-  els.historyEmpty.classList.toggle("hidden", history.length > 0);
+  const doneRackets = getDoneRackets().slice(0, 12);
+  historyList.innerHTML = "";
 
-  if (history.length === 0) {
-    els.historyList.innerHTML = "";
+  if (doneRackets.length === 0) {
+    historyEmpty.classList.remove("hidden");
     return;
   }
 
-  els.historyList.innerHTML = history
-    .map(
-      (item) => `
-        <li class="history-item">
-          <div class="history-item__top">
-            <div class="name-block">
-              <span class="player-name">${escapeHtml(item.playerName)}</span>
-              <span class="racket-name">${escapeHtml(item.racketName)}</span>
-            </div>
-            <span class="tag tag--done">Terminée</span>
-          </div>
+  historyEmpty.classList.add("hidden");
 
-          <div class="tags">
-            <span class="tag">${escapeHtml(item.stringType)}</span>
-            <span class="tag">${escapeHtml(item.tension)} kg</span>
-          </div>
+  doneRackets.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "history-item";
 
-          <div class="meta" style="margin-top:12px;">
-            Terminée le ${formatDateTime(item.completedAt || item.createdAt)}
-          </div>
-        </li>
-      `
-    )
-    .join("");
+    li.innerHTML = `
+      <div class="history-item__top">
+        <div>
+          <h3 class="history-item__title">${escapeHtml(item.player_name)} • ${escapeHtml(item.racket_name)}</h3>
+        </div>
+      </div>
+
+      <div class="history-item__meta">
+        <span class="chip">${escapeHtml(item.string_type)}</span>
+        <span class="chip">${escapeHtml(item.tension)} kg</span>
+        <span class="chip chip--status-done">Terminée</span>
+        <span class="chip">Fin : ${formatDate(item.done_at || item.updated_at)}</span>
+      </div>
+
+      ${
+        item.comment
+          ? `<p class="history-item__comment">${escapeHtml(item.comment)}</p>`
+          : ""
+      }
+    `;
+
+    historyList.appendChild(li);
+  });
 }
 
 function renderStats() {
-  const doneToday = state.history.filter((item) => formatTodayKey(item.completedAt || item.createdAt) === getTodayKey()).length;
-  const stringCounter = [...state.queue, ...state.history].reduce((acc, item) => {
-    acc[item.stringType] = (acc[item.stringType] || 0) + 1;
-    return acc;
-  }, {});
+  const waitingRackets = getSortedWaitingRackets();
+  const doneRackets = getDoneRackets();
 
-  const topString = Object.entries(stringCounter).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
+  statWaiting.textContent = waitingRackets.length.toString();
+  statDoneToday.textContent = doneRackets.filter((item) => isToday(item.done_at || item.updated_at)).length.toString();
+  statDoneTotal.textContent = doneRackets.length.toString();
 
-  els.statWaiting.textContent = String(state.queue.length);
-  els.statDoneToday.textContent = String(doneToday);
-  els.statDoneTotal.textContent = String(state.history.length);
-  els.statTopString.textContent = topString;
+  const counts = {};
+  allRackets.forEach((item) => {
+    const key = item.string_type || "Autre";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  let topString = "—";
+  let topCount = 0;
+
+  Object.entries(counts).forEach(([name, count]) => {
+    if (count > topCount) {
+      topCount = count;
+      topString = name;
+    }
+  });
+
+  statTopString.textContent = topString;
 }
 
 function renderAll() {
   renderQueue();
-  renderAdminList();
+  renderAdmin();
   renderHistory();
   renderStats();
 }
 
-async function trySetupSupabase() {
-  if (!CONFIG.useSupabase) return;
-  if (!window.supabase || !CONFIG.supabaseUrl || !CONFIG.supabaseAnonKey) return;
-
-  try {
-    supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
-    state.supabaseReady = true;
-    await loadFromSupabase();
-    subscribeToSupabase();
-  } catch (error) {
-    console.warn("Supabase indisponible, bascule en mode local.", error);
-    state.supabaseReady = false;
-  }
-}
-
-async function loadFromSupabase() {
-  if (!state.supabaseReady) return;
-
-  const { data, error } = await supabaseClient
-    .from("stringing_queue")
+async function fetchRackets() {
+  const { data, error } = await sb
+    .from("rackets")
     .select("*")
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.warn("Lecture Supabase impossible, mode local conservé.", error.message);
-    state.supabaseReady = false;
+    console.error("Erreur chargement :", error);
+    showMessage("Erreur lors du chargement des données.", "error");
     return;
   }
 
-  state.queue = data.filter((item) => item.status !== "done").map(mapSupabaseRowToItem);
-  state.history = data.filter((item) => item.status === "done").map(mapSupabaseRowToItem);
-  saveStoredData();
+  allRackets = data || [];
   renderAll();
 }
 
-function subscribeToSupabase() {
-  if (!state.supabaseReady) return;
+async function addRacket(payload) {
+  const { error } = await sb.from("rackets").insert([payload]);
 
-  supabaseClient
-    .channel("lardesports-stringing-queue")
-    .on("postgres_changes", { event: "*", schema: "public", table: "stringing_queue" }, async () => {
-      await loadFromSupabase();
-    })
+  if (error) {
+    console.error("Erreur ajout :", error);
+    throw error;
+  }
+}
+
+async function updateRacket(id, updates) {
+  const { error } = await sb
+    .from("rackets")
+    .update(updates)
+    .eq("id", id);
+
+  if (error) {
+    console.error("Erreur update :", error);
+    throw error;
+  }
+}
+
+async function deleteRacket(id) {
+  const { error } = await sb
+    .from("rackets")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Erreur suppression :", error);
+    throw error;
+  }
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  showMessage("");
+
+  const player_name = playerNameInput.value.trim();
+  const racket_name = racketNameInput.value.trim();
+  const string_type = stringTypeInput.value;
+  const tension = Number(tensionInput.value);
+  const comment = commentInput.value.trim();
+  const priority = priorityInput.checked;
+
+  if (!player_name || !racket_name || !string_type || !tension) {
+    showMessage("Merci de remplir les champs obligatoires.", "error");
+    return;
+  }
+
+  try {
+    const payload = {
+      player_name,
+      racket_name,
+      string_type,
+      tension,
+      comment,
+      priority,
+      status: "waiting"
+    };
+
+    await addRacket(payload);
+
+    form.reset();
+    stringTypeInput.value = "BG65";
+    priorityInput.checked = false;
+
+    showMessage("Raquette ajoutée avec succès.", "success");
+    await fetchRackets();
+  } catch (error) {
+    showMessage("Impossible d’ajouter la raquette.", "error");
+  }
+});
+
+cordeurBtn.addEventListener("click", () => {
+  if (cordeurUnlocked) {
+    cordeurPanel.classList.toggle("hidden");
+    return;
+  }
+
+  const password = window.prompt("Mot de passe cordeur :");
+
+  if (password === CORDEUR_PASSWORD) {
+    cordeurUnlocked = true;
+    cordeurPanel.classList.remove("hidden");
+    cordeurBtn.textContent = "Masquer";
+    renderAll();
+  } else if (password !== null) {
+    window.alert("Mot de passe incorrect.");
+  }
+});
+
+cordeurList.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  const id = button.dataset.id;
+  const action = button.dataset.action;
+
+  if (!id || !action) return;
+
+  try {
+    if (action === "start") {
+      await updateRacket(id, {
+        status: "in_progress",
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    if (action === "done") {
+      await updateRacket(id, {
+        status: "done",
+        done_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    if (action === "delete") {
+      const confirmed = window.confirm("Supprimer cette raquette ?");
+      if (!confirmed) return;
+      await deleteRacket(id);
+    }
+
+    await fetchRackets();
+  } catch (error) {
+    window.alert("Une erreur est survenue.");
+  }
+});
+
+async function initRealtime() {
+  sb
+    .channel("rackets-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "rackets"
+      },
+      async () => {
+        await fetchRackets();
+      }
+    )
     .subscribe();
 }
 
-function mapSupabaseRowToItem(row) {
-  return {
-    id: row.id,
-    playerName: row.player_name,
-    racketName: row.racket_name,
-    stringType: row.string_type,
-    tension: row.tension,
-    comment: row.comment || "",
-    priority: Boolean(row.priority),
-    status: row.status,
-    createdAt: row.created_at,
-    startedAt: row.started_at,
-    completedAt: row.completed_at,
-  };
-}
-
-function mapItemToSupabaseRow(item) {
-  return {
-    id: item.id,
-    player_name: item.playerName,
-    racket_name: item.racketName,
-    string_type: item.stringType,
-    tension: item.tension,
-    comment: item.comment,
-    priority: item.priority,
-    status: item.status,
-    created_at: item.createdAt,
-    started_at: item.startedAt,
-    completed_at: item.completedAt,
-  };
-}
-
-async function persistQueueItem(item) {
-  if (!state.supabaseReady) return;
-  const { error } = await supabaseClient.from("stringing_queue").upsert(mapItemToSupabaseRow(item));
-  if (error) console.warn("Impossible de sauvegarder sur Supabase:", error.message);
-}
-
-async function addRacket(item) {
-  state.queue.push(item);
-  normalizeQueueOrder();
-  saveStoredData();
-  renderAll();
-  await persistQueueItem(item);
-}
-
-async function updateItemStatus(id, action) {
-  const index = state.queue.findIndex((item) => item.id === id);
-  if (index === -1) return;
-
-  const item = state.queue[index];
-
-  if (action === "start") {
-    item.status = "in_progress";
-    item.startedAt = new Date().toISOString();
-    normalizeQueueOrder();
-    saveStoredData();
-    renderAll();
-    await persistQueueItem(item);
-    return;
-  }
-
-  if (action === "done") {
-    const completedItem = {
-      ...item,
-      status: "done",
-      completedAt: new Date().toISOString(),
-    };
-
-    state.queue.splice(index, 1);
-    state.history.unshift(completedItem);
-    state.history = state.history.slice(0, 200);
-    saveStoredData();
-    renderAll();
-    await persistQueueItem(completedItem);
-    return;
-  }
-
-  if (action === "delete") {
-    state.queue.splice(index, 1);
-    saveStoredData();
-    renderAll();
-
-    if (state.supabaseReady) {
-      const { error } = await supabaseClient.from("stringing_queue").delete().eq("id", id);
-      if (error) console.warn("Suppression Supabase impossible:", error.message);
-    }
+async function initApp() {
+  try {
+    await fetchRackets();
+    await initRealtime();
+  } catch (error) {
+    console.error(error);
+    showMessage("Erreur au démarrage de l’application.", "error");
   }
 }
 
-function unlockAdmin() {
-  const password = window.prompt("Mot de passe cordeur :");
-  if (password === null) return;
-
-  if (password !== CONFIG.cordeurPassword) {
-    window.alert("Mot de passe incorrect.");
-    return;
-  }
-
-  state.adminUnlocked = true;
-  els.cordeurPanel.classList.remove("hidden");
-  els.cordeurBtn.textContent = "Espace ouvert";
-  els.cordeurBtn.disabled = true;
-}
-
-function bindEvents() {
-  els.form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    clearMessage();
-
-    try {
-      const racket = buildRacketFromForm();
-      await addRacket(racket);
-      resetForm();
-      setMessage("Raquette ajoutée avec succès à la file d’attente.", "success");
-    } catch (error) {
-      setMessage(error.message || "Une erreur est survenue.", "error");
-    }
-  });
-
-  els.cordeurBtn.addEventListener("click", unlockAdmin);
-
-  els.cordeurList.addEventListener("click", async (event) => {
-    const button = event.target.closest("button[data-action]");
-    if (!button) return;
-
-    const action = button.dataset.action;
-    const id = button.dataset.id;
-    await updateItemStatus(id, action);
-  });
-}
-
-async function init() {
-  const stored = getStoredData();
-  state.queue = stored.queue;
-  state.history = stored.history;
-
-  normalizeQueueOrder();
-  renderAll();
-  bindEvents();
-  await trySetupSupabase();
-}
-
-init();
+initApp();
